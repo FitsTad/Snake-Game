@@ -44,6 +44,7 @@ public final class Grid {
      */
     public Grid(Game game, int lengthen, int w, int h) {
         Deque<Point> body = new ArrayDeque<>();
+        // Snake starts out centered around the center of the grid
         body.add(new Point(w / 2 + 1, h / 2));
         body.add(new Point(w / 2, h / 2));
         body.add(new Point(w / 2 - 1, h / 2));
@@ -62,6 +63,7 @@ public final class Grid {
      * @param dy the displacement in the up-down direction
      */
     private void moveSnake(int dx, int dy) {
+        // Delegate the advance functionality to the snake
         this.snake.advance(dx, dy);
     }
     
@@ -80,6 +82,7 @@ public final class Grid {
      * Increase the length of the snake by <code>lengthen</code>
      */
     private void lengthenSnake() {
+        // Add <code>lengthen</code> to the snake's length
         this.snake.lengthen(this.lengthen);
     }
     

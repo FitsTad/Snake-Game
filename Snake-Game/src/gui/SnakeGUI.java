@@ -78,6 +78,7 @@ public class SnakeGUI extends JFrame {
         private final BufferedImage instructions;
         
         public SnakePanel() {
+            // Read the instructions image for display when the game is open and not started
             try {
                 instructions = ImageIO.read(new File("instructions.png"));
             } catch (IOException e) {
@@ -88,13 +89,18 @@ public class SnakeGUI extends JFrame {
         @Override
         public void paintComponent(Graphics graphics) {
             if (started) {
+                // Display the score, pause state, and game over state in the info label
                 SnakeGUI.this.info.setText(" Score: " + SnakeGUI.this.game.grid.getScore() + (SnakeGUI.this.game.paused ? " [paused]" : "") + (SnakeGUI.this.gameover ? " [game over, press space to reset]" : ""));
+                // Render onto an image to avoid lag
                 BufferedImage image = new BufferedImage(1000, 600, BufferedImage.TYPE_INT_ARGB);
                 Graphics g = image.getGraphics();
+                // Fill background black
                 g.setColor(Color.BLACK);
                 g.fillRect(0, 0, 1000, 600);
+                // For each grid space
                 for (int i = 0; i < 100; i++) {
                     for (int j = 0; j < 60; j++) {
+                        // Set the color based on the data point (blank, snake, apple)
                         switch (SnakeGUI.this.grid[i][j]) {
                             case 0:
                                 g.setColor(Color.BLACK);
@@ -106,37 +112,54 @@ public class SnakeGUI extends JFrame {
                                 g.setColor(Color.RED);
                                 break;
                         }
+                        // Fill the appropriate position in the JPanel
                         g.fillRect(i * 10, j * 10, 9, 9);
                     }
                 }
+                // Draw a border
+                g.setColor(Color.WHITE);
+                g.drawRect(0, 0, 1000, 600);
+                // Render the image onto the canvas
                 graphics.drawImage(image, 0, 0, 1000, 600, null);
             } else {
+                // If the game has not yet started, render the instructions image onto the panel
                 graphics.drawImage(this.instructions, 0, 0, 1000, 600, null);
             }
         }
     }
     
     public void init() {
+        // Size needs to be a bit larger than expected due to JFrame borders
         this.setSize(1005, 675);
+        // Exit program when the window is closed
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        // Using GridBagLayout to allow scaling of items arranged in a grid-like layout
         this.setLayout(new GridBagLayout());
+        // Label background color is black to match the rest of the window
         this.info.setBackground(Color.BLACK);
         this.info.setOpaque(true);
+        // Label text white and in monospace size 12
         this.info.setForeground(Color.WHITE);
         this.info.setFont(new Font("Courier New", 0, 12));
+        // Info size is 1000 x 50
         this.info.setSize(1000, 50);
         this.info.setMinimumSize(new Dimension(1000, 50));
         this.info.setText(" Waiting for user...");
+        // Add the two elements in the desired positions, following the GridBagLayout
         this.add(this.info, new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         this.add(this.panel, new GridBagConstraints(0, 1, 1, 1, 1, 12, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-        this.panel.setSize(1010, 600);
-        this.panel.setMinimumSize(new Dimension(1010, 600));
+        this.panel.setSize(1000, 600);
+        this.panel.setMinimumSize(new Dimension(1000, 600));
+        // Double-buffering reduces lag (or what looks like lag)
         this.panel.setDoubleBuffered(true);
+        // Don't allow the window to be resized (pixel errors may occur if the size isn't right)
         this.setResizable(false);
+        // Finally, show the window
         this.setVisible(true);
     }
     
     public static void main(String[] args) {
+        // Create and initialize the game
         SnakeGUI gui = new SnakeGUI();
         gui.init();
     }
