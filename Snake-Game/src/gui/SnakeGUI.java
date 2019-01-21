@@ -26,15 +26,34 @@ import javax.swing.WindowConstants;
  * @author Fitsum, Alex Liao
  */
 public class SnakeGUI extends JFrame {
+    /**
+     * The game (a new one is created every reset)
+     */
     private Game game;
+    /**
+     * The panel (composition class since rendering in the JFrame is unadvised)
+     */
     private final SnakePanel panel;
+    /**
+     * The information label at the top of the screen
+     */
     private final JLabel info;
     
+    /**
+     * The state of each cell (0 = blank, 1 = snake, 2 = apple)
+     */
     public final int[][] grid = new int[100][60];
     
+    /**
+     * Render system pauses and displays a game over in the info bar if the game is over
+     */
     public boolean gameover = false;
     
+    /**
+     * Construct a new window
+     */
     public SnakeGUI() {
+        // The game is 100 x 60 and extends the snake by 3 spaces each apple eaten
         this.game = new Game(100, 60, 3);
         this.info = new JLabel();
         this.panel = this.new SnakePanel();
@@ -73,10 +92,22 @@ public class SnakeGUI extends JFrame {
         });
     }
     
+    /**
+     * Composition class which is a JPanel contained in the GUI to render the game
+     */
     private final class SnakePanel extends JPanel {
+        /**
+         * Whether or not the game has started
+         */
         private boolean started = false;
+        /**
+         * The instructions image (loaded by constructor)
+         */
         private final BufferedImage instructions;
         
+        /**
+         * Create a new empty SnakePanel (must belong to a GUI class) and locate the instructions image
+         */
         public SnakePanel() {
             // Read the instructions image for display when the game is open and not started
             try {
@@ -86,6 +117,11 @@ public class SnakeGUI extends JFrame {
             }
         }
         
+        /**
+         * Display the game onto the screen
+         * 
+         * @param graphics the renderer provided by the JVM
+         */
         @Override
         public void paintComponent(Graphics graphics) {
             if (started) {
@@ -128,6 +164,9 @@ public class SnakeGUI extends JFrame {
         }
     }
     
+    /**
+     * Initialize the GUI and its components
+     */
     public void init() {
         // Size needs to be a bit larger than expected due to JFrame borders
         this.setSize(1005, 675);
@@ -158,6 +197,11 @@ public class SnakeGUI extends JFrame {
         this.setVisible(true);
     }
     
+    /**
+     * Main function
+     * 
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         // Create and initialize the game
         SnakeGUI gui = new SnakeGUI();

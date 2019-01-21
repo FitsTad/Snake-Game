@@ -36,10 +36,10 @@ public final class RandomUtils {
     /**
      * Generate a random point and avoid set of points
      * 
-     * @param x
-     * @param y
-     * @param avoid
-     * @return 
+     * @param x maximum x
+     * @param y maximum y
+     * @param avoid points to avoid
+     * @return a random point in range and not avoided
      */
     public static final Point randpoint(int x, int y, Set<Point> avoid) {
         // Get a random number from 0 up to the number of points not avoided
