@@ -179,7 +179,7 @@ public class SnakeGUI extends JFrame {
         this.info.setOpaque(true);
         // Label text white and in monospace size 12
         this.info.setForeground(Color.WHITE);
-        this.info.setFont(new Font("Courier New", 0, 12));
+        this.info.setFont(new Font("Courier New", 0, 18));
         // Info size is 1000 x 50
         this.info.setSize(1000, 50);
         this.info.setMinimumSize(new Dimension(1000, 50));
