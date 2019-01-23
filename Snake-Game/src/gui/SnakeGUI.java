@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
@@ -57,6 +58,11 @@ public class SnakeGUI extends JFrame {
         this.game = new Game(100, 60, 3);
         this.info = new JLabel();
         this.panel = this.new SnakePanel();
+        //GUI Title
+        setTitle("Snake Game");
+        //Icon on the Java Player
+        ImageIcon icon = new ImageIcon("snake.png");
+        setIconImage(icon.getImage());
         
         // Wait for the user to press SPACE to start the game
         this.addKeyListener(new KeyAdapter() {
@@ -177,8 +183,8 @@ public class SnakeGUI extends JFrame {
         // Label background color is black to match the rest of the window
         this.info.setBackground(Color.BLACK);
         this.info.setOpaque(true);
-        // Label text white and in monospace size 12
-        this.info.setForeground(Color.WHITE);
+        // Label text white and in monospace size 18
+        this.info.setForeground(Color.GREEN);
         this.info.setFont(new Font("Courier New", 0, 18));
         // Info size is 1000 x 50
         this.info.setSize(1000, 50);
