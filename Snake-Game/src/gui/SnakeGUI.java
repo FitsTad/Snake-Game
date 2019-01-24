@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -93,6 +94,8 @@ public class SnakeGUI extends JFrame {
                         if (ke.getKeyCode() == KeyEvent.VK_SPACE && SnakeGUI.this.gameover) {
                             SnakeGUI.this.gameover = false;
                             SnakeGUI.this.game = new Game(100, 60, 3);
+                        } else if (ke.getKeyCode() == KeyEvent.VK_Q) {
+                            System.exit(0);
                         } else {
                             // SHIFT speeds up and CONTROL slows down (logarithmic by 0.1 in log 10)
                             switch (ke.getKeyCode()) {
@@ -181,7 +184,7 @@ public class SnakeGUI extends JFrame {
                         + SnakeGUI.this.game.grid.getScore()
                         + " [relative speed: " + SnakeGUI.this.speed + "]"
                         + (SnakeGUI.this.game.paused ? " [paused]" : "")
-                        + (SnakeGUI.this.gameover ? " [game over, press space to reset]" : ""));
+                        + (SnakeGUI.this.gameover ? " [game over, press space to reset or q to quit]" : ""));
                 // Render onto an image to avoid lag
                 BufferedImage image = new BufferedImage(1000, 600, BufferedImage.TYPE_INT_ARGB);
                 Graphics g = image.getGraphics();
@@ -223,8 +226,11 @@ public class SnakeGUI extends JFrame {
      * Initialize the GUI and its components
      */
     public void init() {
-        // Size needs to be a bit larger than expected due to JFrame borders
-        this.setSize(1005, 675);
+        // Set size to 1000x650
+        this.setSize(1000, 650);
+        // Center the frame
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(screen.width / 2 - 500, screen.height / 2 - 325);
         // Exit program when the window is closed
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         // Using GridBagLayout to allow scaling of items arranged in a grid-like layout
@@ -248,6 +254,8 @@ public class SnakeGUI extends JFrame {
         this.panel.setDoubleBuffered(true);
         // Don't allow the window to be resized (pixel errors may occur if the size isn't right)
         this.setResizable(false);
+        // Remove the borders for alignment
+        this.setUndecorated(true);
         // Finally, show the window
         this.setVisible(true);
     }
