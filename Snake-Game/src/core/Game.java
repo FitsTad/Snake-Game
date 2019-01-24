@@ -3,7 +3,8 @@ package core;
 import gui.SnakeGUI;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
-
+import java.util.ArrayDeque;
+import java.util.Deque;
 /**
  *
  * @author Alex Liao
@@ -20,10 +21,6 @@ public final class Game {
      */
     private int dx, dy;
     /**
-     * The last move made (to prevent folding)
-     */
-    private int mx, my;
-    /**
      * The dimensions of the grid
      */
     private final Dimension size;
@@ -31,11 +28,22 @@ public final class Game {
      * Allow pausing of the game
      */
     public boolean paused;
-    
     /**
      * Check if the game is over
      */
     private boolean gameover;
+    /**
+     * Queue of key presses in case two keys are pressed within one frame update
+     */
+    private final Deque<Integer> keyqueue;
+    /**
+     * Array of DX given a code
+     */
+    private static final int[] DX = {-1, 0, 1, 0};
+    /**
+     * Array of DY given a code
+     */
+    private static final int[] DY = {0, -1, 0, 1};
     
     /**
      * Construct a new game given specified mechanics settings
@@ -49,11 +57,10 @@ public final class Game {
         // Snake starts out moving to the right
         this.dx = 1;
         this.dy = 0;
-        this.mx = 1;
-        this.my = 0;
         this.size = new Dimension(w, h);
         this.paused = false;
         this.gameover = false;
+        this.keyqueue = new ArrayDeque<>();
         
         this.grid.generateApple();
     }
@@ -87,11 +94,14 @@ public final class Game {
      */
     public final void advanceState() {
         if (this.paused) return;
+        // Register the next key press, if any
+        if (!this.keyqueue.isEmpty()) {
+            int code = this.keyqueue.pop();
+            this.dx = DX[code];
+            this.dy = DY[code];
+        }
         // Advance the grid to advance the state, and if the game is over, set game over and pause
         this.gameover = this.paused = this.grid.advanceState(this.dx, this.dy);
-        // MX and MY exist to prevent the user from pressing a perpendicular key and then the opposite key and inverting the snake through itself
-        this.mx = this.dx;
-        this.my = this.dy;
     }
     
     /**
@@ -117,36 +127,27 @@ public final class Game {
      * 
      * @param code the numerical ID of the pressed key
      */
-    public final void registerKeypress(int code) {
-        // Given an arrow key, adjust the direction (if it is not parallel), and on space, toggle pause
-        switch (code) {
-            case KeyEvent.VK_UP:
-                if (this.my == 0) {
-                    this.dy = -1;
-                    this.dx = 0;
+    public synchronized final void registerKeypress(int code) {
+        // If it's a space, pause and clear the key queue so the snake doesn't turn after pausing
+        if (code == KeyEvent.VK_SPACE) {
+            // Toggle pause
+            this.paused ^= true;
+            // Clear the key queue
+            this.keyqueue.clear();
+        } else {
+            int dir = code - 37; // 0 left | 1 up | 2 right | 3 down
+            int cdx = DX[dir]; // queued x direction change
+            if (this.keyqueue.isEmpty()) {
+                // If the key queue is empty, compare to the current direction to prevent folding
+                if ((cdx == 0) ^ (this.dx == 0)) { // Fails if either both are an x-dir or neither is
+                    this.keyqueue.addLast(dir);
                 }
-                break;
-            case KeyEvent.VK_DOWN:
-                if (this.my == 0) {
-                    this.dy = 1;
-                    this.dx = 0;
+            } else {
+                // Otherwise, compare to the next queued element
+                if (((dir & 1) ^ (this.keyqueue.getFirst() & 1)) == 1) { // Fails if either both or neither is an x-dir
+                    this.keyqueue.addLast(dir);
                 }
-                break;
-            case KeyEvent.VK_LEFT:
-                if (this.mx == 0) {
-                    this.dy = 0;
-                    this.dx = -1;
-                }
-                break;
-            case KeyEvent.VK_RIGHT:
-                if (this.mx == 0) {
-                    this.dy = 0;
-                    this.dx = 1;
-                }
-                break;
-            case KeyEvent.VK_SPACE:
-                this.paused ^= true; // Toggle whether the game is paused
-                break;
+            }
         }
     }
 }

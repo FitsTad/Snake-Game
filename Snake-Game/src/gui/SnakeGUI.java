@@ -51,6 +51,21 @@ public class SnakeGUI extends JFrame {
     public boolean gameover = false;
     
     /**
+     * The game timer
+     */
+    private Timer timer;
+    
+    /**
+     * The present game interval
+     */
+    private float interval = 50;
+    
+    /**
+     * The relative speed (purely for display; the actual speed is 
+     */
+    private int speed = 0;
+    
+    /**
      * Construct a new window
      */
     public SnakeGUI() {
@@ -79,23 +94,53 @@ public class SnakeGUI extends JFrame {
                             SnakeGUI.this.gameover = false;
                             SnakeGUI.this.game = new Game(100, 60, 3);
                         } else {
-                            SnakeGUI.this.game.registerKeypress(ke.getKeyCode());
+                            // SHIFT speeds up and CONTROL slows down (logarithmic by 0.1 in log 10)
+                            switch (ke.getKeyCode()) {
+                                case KeyEvent.VK_SHIFT:
+                                    SnakeGUI.this.timer.cancel();
+                                    SnakeGUI.this.interval /= 1.1f; // lowering the interval speeds up
+                                    SnakeGUI.this.speed++;
+                                    // Reschedule the task
+                                    (SnakeGUI.this.timer = new Timer())
+                                            .scheduleAtFixedRate(genTask(), 0, (int) Math.ceil(SnakeGUI.this.interval));
+                                    break;
+                                case KeyEvent.VK_CONTROL:
+                                    SnakeGUI.this.timer.cancel();
+                                    SnakeGUI.this.interval *= 1.1f; // raising the interval slows down
+                                    SnakeGUI.this.speed--;
+                                    // Reschedule the task
+                                    (SnakeGUI.this.timer = new Timer())
+                                            .scheduleAtFixedRate(genTask(), 0, (int) Math.ceil(SnakeGUI.this.interval));
+                                    break;
+                                default:
+                                    SnakeGUI.this.game.registerKeypress(ke.getKeyCode());
+                                    break;
+                            }
                         }
                     }
                 });
 
-                new Timer().scheduleAtFixedRate(new TimerTask() {
-                    @Override
-                    public void run() {
-                        SnakeGUI.this.game.advanceState();
-                        SnakeGUI.this.game.draw(SnakeGUI.this);
-                        SnakeGUI.this.panel.update(SnakeGUI.this.panel.getGraphics());
-//                        SnakeGUI.this.update(SnakeGUI.this.getGraphics());
-                    }
-                }, 0, 50);
+                (SnakeGUI.this.timer = new Timer()).scheduleAtFixedRate(genTask(), 0, 50);
                 SnakeGUI.this.removeKeyListener(this);
             }
         });
+    }
+    
+    /**
+     * Generate the timer task that updates the game
+     * 
+     * @return a TimerTask that updates the game
+     */
+    private TimerTask genTask() {
+        return new TimerTask() {
+            @Override
+            public void run() {
+                SnakeGUI.this.game.advanceState();
+                SnakeGUI.this.game.draw(SnakeGUI.this);
+                SnakeGUI.this.panel.update(SnakeGUI.this.panel.getGraphics());
+                // SnakeGUI.this.update(SnakeGUI.this.getGraphics());
+            }
+        };
     }
     
     /**
@@ -132,7 +177,11 @@ public class SnakeGUI extends JFrame {
         public void paintComponent(Graphics graphics) {
             if (started) {
                 // Display the score, pause state, and game over state in the info label
-                SnakeGUI.this.info.setText(" Score: " + SnakeGUI.this.game.grid.getScore() + (SnakeGUI.this.game.paused ? " [paused]" : "") + (SnakeGUI.this.gameover ? " [game over, press space to reset]" : ""));
+                SnakeGUI.this.info.setText(" Score: "
+                        + SnakeGUI.this.game.grid.getScore()
+                        + " [relative speed: " + SnakeGUI.this.speed + "]"
+                        + (SnakeGUI.this.game.paused ? " [paused]" : "")
+                        + (SnakeGUI.this.gameover ? " [game over, press space to reset]" : ""));
                 // Render onto an image to avoid lag
                 BufferedImage image = new BufferedImage(1000, 600, BufferedImage.TYPE_INT_ARGB);
                 Graphics g = image.getGraphics();
