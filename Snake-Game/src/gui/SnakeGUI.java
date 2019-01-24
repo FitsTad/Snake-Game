@@ -6,9 +6,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
@@ -35,10 +33,6 @@ public class SnakeGUI extends JFrame {
      * The panel (composition class since rendering in the JFrame is unadvised)
      */
     private final SnakePanel panel;
-    /**
-     * The information label at the top of the screen
-     */
-    private final JLabel info;
     
     /**
      * The state of each cell (0 = blank, 1 = snake, 2 = apple)
@@ -71,7 +65,6 @@ public class SnakeGUI extends JFrame {
     public SnakeGUI() {
         // The game is 100 x 60 and extends the snake by 3 spaces each apple eaten
         this.game = new Game(100, 60, 3);
-        this.info = new JLabel();
         this.panel = this.new SnakePanel();
         //GUI Title
         setTitle("Snake Game");
@@ -93,6 +86,8 @@ public class SnakeGUI extends JFrame {
                         if (ke.getKeyCode() == KeyEvent.VK_SPACE && SnakeGUI.this.gameover) {
                             SnakeGUI.this.gameover = false;
                             SnakeGUI.this.game = new Game(100, 60, 3);
+                        } else if (ke.getKeyCode() == KeyEvent.VK_Q) {
+                            System.exit(0);
                         } else {
                             // SHIFT speeds up and CONTROL slows down (logarithmic by 0.1 in log 10)
                             switch (ke.getKeyCode()) {
@@ -176,18 +171,20 @@ public class SnakeGUI extends JFrame {
         @Override
         public void paintComponent(Graphics graphics) {
             if (started) {
-                // Display the score, pause state, and game over state in the info label
-                SnakeGUI.this.info.setText(" Score: "
-                        + SnakeGUI.this.game.grid.getScore()
-                        + " [relative speed: " + SnakeGUI.this.speed + "]"
-                        + (SnakeGUI.this.game.paused ? " [paused]" : "")
-                        + (SnakeGUI.this.gameover ? " [game over, press space to reset]" : ""));
                 // Render onto an image to avoid lag
-                BufferedImage image = new BufferedImage(1000, 600, BufferedImage.TYPE_INT_ARGB);
+                BufferedImage image = new BufferedImage(1000, 650, BufferedImage.TYPE_INT_ARGB);
                 Graphics g = image.getGraphics();
                 // Fill background black
                 g.setColor(Color.BLACK);
-                g.fillRect(0, 0, 1000, 600);
+                g.fillRect(0, 0, 1000, 650);
+                g.setColor(Color.GREEN);
+                g.setFont(new Font("Courier New", 0, 18));
+                g.drawString(" Score: "
+                        + SnakeGUI.this.game.grid.getScore()
+                        + " [relative speed: " + SnakeGUI.this.speed + "]"
+                        + (SnakeGUI.this.game.paused ? " [paused]" : "")
+                        + (SnakeGUI.this.gameover ? " [game over, press space to reset or q to quit]" : ""),
+                        10, 40);
                 // For each grid space
                 for (int i = 0; i < 100; i++) {
                     for (int j = 0; j < 60; j++) {
@@ -204,17 +201,22 @@ public class SnakeGUI extends JFrame {
                                 break;
                         }
                         // Fill the appropriate position in the JPanel
-                        g.fillRect(i * 10, j * 10, 9, 9);
+                        g.fillRect(i * 10, j * 10 + 50, 9, 9);
                     }
                 }
                 // Draw a border
                 g.setColor(Color.WHITE);
-                g.drawRect(0, 0, 1000, 600);
+                g.drawRect(0, 50, 1000, 600);
                 // Render the image onto the canvas
-                graphics.drawImage(image, 0, 0, 1000, 600, null);
+                graphics.drawImage(image, 0, 0, 1000, 650, null);
             } else {
                 // If the game has not yet started, render the instructions image onto the panel
-                graphics.drawImage(this.instructions, 0, 0, 1000, 600, null);
+                graphics.drawImage(this.instructions, 0, 50, 1000, 600, null);
+                graphics.setColor(Color.BLACK);
+                graphics.fillRect(0, 0, 1000, 50);
+                graphics.setColor(Color.GREEN);
+                graphics.setFont(new Font("Courier New", 0, 18));
+                graphics.drawString("Waiting for user...", 10, 40);
             }
         }
     }
@@ -223,31 +225,22 @@ public class SnakeGUI extends JFrame {
      * Initialize the GUI and its components
      */
     public void init() {
-        // Size needs to be a bit larger than expected due to JFrame borders
-        this.setSize(1005, 675);
+        // Set size to 1000x650
+        this.setSize(1000, 650);
+        // Center the frame
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(screen.width / 2 - 500, screen.height / 2 - 325);
         // Exit program when the window is closed
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        // Using GridBagLayout to allow scaling of items arranged in a grid-like layout
-        this.setLayout(new GridBagLayout());
-        // Label background color is black to match the rest of the window
-        this.info.setBackground(Color.BLACK);
-        this.info.setOpaque(true);
-        // Label text white and in monospace size 18
-        this.info.setForeground(Color.GREEN);
-        this.info.setFont(new Font("Courier New", 0, 18));
-        // Info size is 1000 x 50
-        this.info.setSize(1000, 50);
-        this.info.setMinimumSize(new Dimension(1000, 50));
-        this.info.setText(" Waiting for user...");
-        // Add the two elements in the desired positions, following the GridBagLayout
-        this.add(this.info, new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-        this.add(this.panel, new GridBagConstraints(0, 1, 1, 1, 1, 12, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-        this.panel.setSize(1000, 600);
-        this.panel.setMinimumSize(new Dimension(1000, 600));
+        this.add(this.panel);
+        this.panel.setSize(1000, 650);
+        this.panel.setMinimumSize(new Dimension(1000, 650));
         // Double-buffering reduces lag (or what looks like lag)
         this.panel.setDoubleBuffered(true);
         // Don't allow the window to be resized (pixel errors may occur if the size isn't right)
         this.setResizable(false);
+        // Remove the borders for alignment
+        this.setUndecorated(true);
         // Finally, show the window
         this.setVisible(true);
     }

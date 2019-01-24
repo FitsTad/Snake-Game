@@ -42,16 +42,10 @@ public final class RandomUtils {
      * @return a random point in range and not avoided
      */
     public static final Point randpoint(int x, int y, Set<Point> avoid) {
-        // Get a random number from 0 up to the number of points not avoided
-        int p = RANDOM.nextInt(x * y - avoid.size());
-        // Go through the whole grid counting until we hit the pth non-avoided point
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                Point q = new Point(i, j);
-                if (p == 0) return q;
-                if (!avoid.contains(q)) p--;
-            }
-        }
-        return null;
+        Point rp;
+        do {
+            rp = new Point(randint(x), randint(y));
+        } while (avoid.contains(rp));
+        return rp;
     }
 }
